@@ -1,0 +1,39 @@
+#version 460
+
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+
+layout (std140, binding = 2) uniform Rect {
+    vec2 leftbottom;
+    vec2 righttop;
+};
+
+layout (location = 2) uniform uint num_boxes;
+
+struct Box {
+    vec2 range;
+    float value;
+    int color_id;
+};
+
+layout (std430, binding = 0) buffer SSBO {
+    Box boxes[];
+};
+
+layout (std430, binding = 1) buffer Select {
+    int selects[];
+};
+
+const float height = 0.01;
+
+void main() {
+    uint work_index = gl_WorkGroupID.z * gl_NumWorkGroups.x * gl_NumWorkGroups.y +
+                      gl_WorkGroupID.y * gl_NumWorkGroups.x +
+                      gl_WorkGroupID.x;
+    uint index = gl_LocalInvocationIndex + work_index * gl_WorkGroupSize.x * gl_WorkGroupSize.y * gl_WorkGroupSize.z;
+
+    if(index < num_boxes) {
+        vec2 center = vec2((boxes[index].range.x + boxes[index].range.y) / 2, boxes[index].value);
+        selects[index] = int((leftbottom.x < center.x && center.x < righttop.x && leftbottom.y < center.y && center.y < righttop.y) || 
+                        (boxes[index].range.x < leftbottom.x && leftbottom.x < boxes[index].range.y && boxes[index].value - height < leftbottom.y && leftbottom.y < boxes[index].value + height));
+    }
+}
