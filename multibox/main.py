@@ -132,7 +132,7 @@ def main():
     data = {}
     glfw.set_window_user_pointer(window, data)
 
-    num_boxes = 1000
+    num_boxes = 10000
     boxes = (Box * num_boxes)(*[create_box() for _ in range(num_boxes)])
 
     ssbos = glGenBuffers(2)
