@@ -28,9 +28,11 @@ def framebuffer_size_callback(window, width, height):
     glUniform2f(1, width, height)
     program.unuse()
 
-def text(s, pos, size, advances):
+def text(s, pos, size, advances, align=("top", "left")):
     sum_advances = 0
     vertices = []
+    if align[1] == "right":
+        s = s[::-1]
     for c in s:
         c = int(c)
         vertices.append(Vertex(c, (GLfloat * 2)(pos[0], pos[1]), size, sum_advances))
@@ -102,10 +104,10 @@ def main():
     glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(chardata), chardata, GL_STATIC_DRAW)
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo)
 
-    vertices = text("1002193516784", (-1, 0.5), 0.2, advances)
-    vertices.extend(text("51000", (0, 0), 0.15, advances))
-    vertices.extend(text("9878621", (-0.5, -0.5), 0.05, advances))
-    vertices.extend(text("01122", (-1, 1), 0.05, advances))
+    vertices = text("1002193516784", (1, 0.5), 0.2, advances, align=("middle", "right"))
+    vertices.extend(text("51000", (0, 0), 0.15, advances, align=("middle", "right")))
+    vertices.extend(text("9878621", (0.5, -0.5), 0.05, advances, align=("middle", "right")))
+    vertices.extend(text("01122", (1, 1), 0.05, advances, align=("middle", "right")))
     num_vertices = len(vertices)
     vertices = (Vertex * num_vertices)(*vertices)
     vbo = glGenBuffers(1)
@@ -126,9 +128,9 @@ def main():
     glBindVertexArray(0)
 
     program = Shader()
-    with open("shaders/font.vert", "r") as f:
+    with open("shaders/font_rightmiddle.vert", "r") as f:
         program.attach_shader(f.read(), GL_VERTEX_SHADER)
-    with open("shaders/font.geom", "r") as f:
+    with open("shaders/font_rightmiddle.geom", "r") as f:
         program.attach_shader(f.read(), GL_GEOMETRY_SHADER)
     with open("shaders/font.frag", "r") as f:
         program.attach_shader(f.read(), GL_FRAGMENT_SHADER)
